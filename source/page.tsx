@@ -9,7 +9,7 @@ async function request(action:string,extra:any={},quiet=false){if(!quiet)B(true)
 useEffect(()=>{if(!g||!token)return;const timer=setInterval(()=>request('state',{},true),1500);return()=>clearInterval(timer)},[!!g,token]);
 useEffect(()=>{if(token)request('state',{},true);},[token]);
 const myTurn=g?.phase==='playing'&&g.turn===g.seat;const card=sel===null?null:g?.hand[sel];
-const棋子s=g?.chips||Array(100).fill(null);const lines=g?.lines||{blue:[],green:[]};
+const chips=g?.chips||Array(100).fill(null);const lines=g?.lines||{blue:[],green:[]};
 
 return <main><header><a className="brand" href="/" onClick={e=>{if(g)e.preventDefault()}}><span className="brandmark">▦</span><span>連珠棋<span className="brand-sub">私人遊戲桌</span></span></a><div className="topright"><span className="live">● 四位玩家 · 兩支隊伍</span><button className="ghost" onClick={()=>R(true)}>遊戲說明 ↗</button></div></header>
 <div className="intro"><div><div className="eyebrow">一點運氣，更多策略。</div><h1>一起來玩連珠棋！</h1><p>出一張牌，放一枚棋子，連成五子一線。</p></div><div className="team-pill"><i className="dot blue"/> 藍隊 <span>對</span> <i className="dot green"/> 綠隊</div></div>

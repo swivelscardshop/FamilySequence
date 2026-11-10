@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: private-sequence-table
+    runtime: node
+    plan: starter
+    buildCommand: node --check server.mjs
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: DATA_DIR
+        value: /var/data/sequence
+    disk:
+      name: sequence-data
+      mountPath: /var/data
+      sizeGB: 1

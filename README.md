@@ -2,7 +2,7 @@
 
 手機友善、繁體中文介面及遊戲說明，撲克牌保留 A、2–10、J、Q、K 及原有花色。
 一個網址、一張共用遊戲桌；不用房間代碼。最多四位玩家，藍隊與綠隊各兩人。
-第 1、3 位加入者為藍隊，第 2、4 位為綠隊。第一位玩家是房主。
+加入時可選擇藍隊或綠隊，各隊最多兩位；系統會自動安排兩隊交替出牌。第一位玩家是房主。
 
 ## Deploy to your Render account (English)
 
@@ -13,7 +13,7 @@ This ZIP is ready to run. Its prebuilt frontend and game engine are included; pr
 3. No password or login variables are required. Deploy the Blueprint.
 4. The included Blueprint selects a **paid Starter web service** and a **1 GB persistent disk**. Review Render's current charges before creating it. The disk preserves the table across deploys and restarts.
 5. Open the HTTPS URL Render assigns. The game opens directly, with no login prompt.
-6. Each person opens that same URL on their own device/browser, enters their name, and presses **加入遊戲**. After four players join, the host presses **發牌開始**.
+6. Each person opens that same URL on their own device/browser, enters their name, chooses Blue (藍隊) or Green (綠隊), and presses **加入遊戲**. After four players join, the host presses **發牌開始**.
 
 ### If creating a Web Service manually
 

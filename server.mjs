@@ -7,6 +7,8 @@ const root=path.dirname(fileURLToPath(import.meta.url));
 const dir=path.resolve(process.env.DATA_DIR||path.join(root,'data'));mkdirSync(dir,{recursive:true});
 const file=path.join(dir,'table.json');
 let g=existsSync(file)?JSON.parse(readFileSync(file,'utf8')):{players:[],phase:'lobby',log:[]};
+g.players.forEach((p,i)=>{p.team ||= i%2?'green':'blue';});
+if(g.phase==='playing'&&!g.turnOrder)g.turnOrder=[0,1,2,3];
 const save=()=>{writeFileSync(file+'.tmp',JSON.stringify(g),{mode:0o600});renameSync(file+'.tmp',file);};
 const send=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data));};
 const server=http.createServer(async(req,res)=>{
@@ -25,8 +27,10 @@ if(url.pathname==='/api/game'){
  if(b.action==='join'){
    if(!next.players.some(p=>p.token===b.token)){
     if(next.players.length>=4||next.phase!=='lobby')throw Error('四個座位已滿，或遊戲已經開始。');
+    if(!['blue','green'].includes(b.team))throw Error('請選擇藍隊或綠隊。');
+    if(next.players.filter((p,i)=>(p.team||(i%2?'green':'blue'))===b.team).length>=2)throw Error((b.team==='blue'?'藍隊':'綠隊')+'已滿，請選擇另一隊。');
     if(typeof b.name!=='string'||!b.name.trim())throw Error('請輸入你的名字。');
-    next.players.push({name:b.name.trim().slice(0,24),token:b.token});
+    next.players.push({name:b.name.trim().slice(0,24),token:b.token,team:b.team});
    }
  }else{
    if(!next.players.some(p=>p.token===b.token))throw Error('請輸入名字並加入遊戲。');

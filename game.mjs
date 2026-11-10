@@ -8,7 +8,7 @@ QC 9S 9C 8H 9H 10H QH QD 5H 3D
 KC 8S 10C QC KC AC AD KD 4H 4D
 AC 7S 6S 5S 4S 3S 2S 2H 3H 5D
 X AD KD QD 10D 9D 8D 7D 6D X`.split(/\s+/);
-const team = (s) => s % 2 ? "green" : "blue";
+const team = (s, g) => g?.players?.[s]?.team || (s % 2 ? "green" : "blue");
 function shuffle(a) {
   for (let i = a.length - 1; i > 0; i--) {
     let j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1);
@@ -23,6 +23,7 @@ function deal(g) {
   g.chips = Array(100).fill(null);
   g.lines = { blue: [], green: [] };
   g.turn = crypto.getRandomValues(new Uint32Array(1))[0] % 4;
+  g.turnOrder = [0, 1].flatMap((k) => ["blue", "green"].map((t) => g.players.map((p, i) => team(i, g) === t ? i : -1).filter((i) => i >= 0)[k]));
   g.phase = "playing";
   g.exchanged = false;
   g.log = ["\u5DF2\u767C\u724C\uFF0C\u904A\u6232\u958B\u59CB\uFF01"];
@@ -36,7 +37,7 @@ function draw(g) {
 }
 function legal(g, seat, card, i) {
   if (BOARD[i] === "X" || i < 0 || i > 99) return false;
-  if (card === "JH" || card === "JS") return g.chips[i] && g.chips[i] !== team(seat) && !Object.values(g.lines).flat(2).includes(i);
+  if (card === "JH" || card === "JS") return g.chips[i] && g.chips[i] !== team(seat, g) && !Object.values(g.lines).flat(2).includes(i);
   return !g.chips[i] && (["JC", "JD"].includes(card) || BOARD[i] === card);
 }
 function sequences(g, color) {
@@ -75,26 +76,26 @@ function action(g, token, b) {
     return;
   }
   if (b.action !== "play" || !legal(g, s, card, b.cell)) throw Error("\u8ACB\u9078\u64C7\u767C\u5149\u7684\u683C\u5B50\u3002");
-  g.chips[b.cell] = ["JH", "JS"].includes(card) ? null : team(s);
+  g.chips[b.cell] = ["JH", "JS"].includes(card) ? null : team(s, g);
   g.discard.push(card);
   g.hands[s].splice(b.card, 1);
   const next = draw(g);
   if (next) g.hands[s].push(next);
-  sequences(g, team(s));
+  sequences(g, team(s, g));
   g.log.unshift(g.players[s].name + " \u6253\u51FA\u4E86 " + card + ".");
   g.log = g.log.slice(0, 12);
-  if (g.lines[team(s)].length >= 2) {
-    g.winner = team(s);
+  if (g.lines[team(s, g)].length >= 2) {
+    g.winner = team(s, g);
     g.phase = "finished";
   } else if (g.chips.every((v, i) => v || BOARD[i] === "X")) {
     g.phase = "finished";
     g.winner = "draw";
-  } else g.turn = (g.turn + 1) % 4;
+  } else g.turn = g.turnOrder[(g.turnOrder.indexOf(g.turn) + 1) % 4];
   g.exchanged = false;
 }
 function view(g, token) {
   const seat = g.players.findIndex((p) => p.token === token);
-  return { ...g, players: g.players.map((p) => ({ name: p.name })), deck: g.deck?.length || 0, hands: void 0, hand: g.hands?.[seat] || [], seat, discard: g.discard?.slice(-1) || [] };
+  return { ...g, players: g.players.map((p) => ({ name: p.name, team: team(g.players.indexOf(p), g) })), deck: g.deck?.length || 0, hands: void 0, hand: g.hands?.[seat] || [], seat, discard: g.discard?.slice(-1) || [] };
 }
 export {
   BOARD,

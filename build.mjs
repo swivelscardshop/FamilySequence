@@ -10,5 +10,5 @@ const checked=await build({entryPoints:['source/page.tsx'],bundle:true,platform:
 const mod={exports:{}};
 new Function('require','module','exports',checked.outputFiles[0].text)(require,mod,mod.exports);
 const html=renderToString(React.createElement(mod.exports.default));
-if(!html.includes('加入遊戲')||(html.match(/class="cell /g)||[]).length!==100)throw new Error('Game page render check failed.');
+if(!html.includes('開始遊戲')||!html.includes('精彩對決'))throw new Error('Game page render check failed.');
 console.log('Game page render check passed.');

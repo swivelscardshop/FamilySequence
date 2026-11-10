@@ -48,10 +48,11 @@ No room code, username, or password is needed. Player seat tokens still keep han
 
 棋盤會隨手機寬度縮放。先點選手牌，再點發光格子。遊戲與說明使用繁體中文，牌面不翻譯。橫向模式可放大格子。
 
-## Returning, new players, and resetting
+## Disconnecting, leaving, and returning
 
-Keep using the same browser/device: a local player token restores your seat after refresh. Other players' hands never leave the server. Teammates cannot see one another's cards.
-The host can use **清空遊戲桌並重新入座** to clear the table, release all four seats, and start with different people. The UI asks before clearing. Changing browsers or clearing browser storage loses that device's seat token. If the host token is lost, stop the service, remove `table.json` from your data directory, then restart; this resets the whole game.
+Use **離開遊戲** to leave immediately. Closing the browser normally releases the seat after a 10-second grace period; refreshing within this window keeps your seat. If the browser cannot notify the server (for example, a force-closed phone app), missing heartbeats release the seat after approximately 60 seconds. A suspended phone tab may also time out.
+
+During a game, an empty seat pauses moves. A replacement player selects the same team and takes that seat and hand; the board is preserved. Once all four seats are filled, play resumes. The host transfers automatically when the current host leaves. If everyone leaves, the table resets. Host reset remains available with confirmation.
 
 The game implements matching placements, two-eyed wild jacks (clubs/diamonds), one-eyed removal jacks (hearts/spades), dead-card exchange once per turn, protected sequences, free corners, and two sequences to win with at most one shared space. Replacements and sequence detection are automatic; physical-table forgotten-draw penalties and verbal coaching penalties are not automated.
 

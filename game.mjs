@@ -56,13 +56,14 @@ function action(g, token, b) {
   let s = g.players.findIndex((p) => p.token === token);
   if (s < 0) throw Error("\u8ACB\u5148\u52A0\u5165\u904A\u6232\u3002");
   if (b.action === "start" || b.action === "rematch") {
-    if (s !== 0) throw Error("\u53EA\u6709\u623F\u4E3B\u53EF\u4EE5\u767C\u724C\u3002");
-    if (g.players.length !== 4) throw Error("\u9700\u8981\u56DB\u4F4D\u73A9\u5BB6\u5165\u5EA7\u3002");
+    if (token !== (g.hostToken || g.players[0]?.token)) throw Error("\u53EA\u6709\u623F\u4E3B\u53EF\u4EE5\u767C\u724C\u3002");
+    if (g.players.length !== 4 || g.players.some((p) => p.vacant)) throw Error("\u9700\u8981\u56DB\u4F4D\u73A9\u5BB6\u5165\u5EA7\u3002");
     if (b.action === "rematch" && g.phase !== "finished") throw Error("\u8ACB\u5148\u5B8C\u6210\u672C\u5C40\u3002");
     if (b.action === "start" && g.phase !== "lobby") throw Error("\u904A\u6232\u5DF2\u7D93\u958B\u59CB\u3002");
     deal(g);
     return;
   }
+  if (g.players.some((p) => p.vacant)) throw Error("\u6709\u73A9\u5BB6\u96E2\u7DDA\uFF0C\u8ACB\u7B49\u5F85\u88DC\u6EFF\u56DB\u4F4D\u73A9\u5BB6\u3002");
   if (g.phase !== "playing" || s !== g.turn) throw Error("\u8ACB\u7B49\u5F85\u4F60\u7684\u56DE\u5408\u3002");
   const card = g.hands[s][b.card];
   if (!card) throw Error("\u8ACB\u5148\u9078\u64C7\u4E00\u5F35\u624B\u724C\u3002");
@@ -95,7 +96,7 @@ function action(g, token, b) {
 }
 function view(g, token) {
   const seat = g.players.findIndex((p) => p.token === token);
-  return { ...g, players: g.players.map((p) => ({ name: p.name, team: team(g.players.indexOf(p), g) })), deck: g.deck?.length || 0, hands: void 0, hand: g.hands?.[seat] || [], seat, discard: g.discard?.slice(-1) || [] };
+  return { ...g, hostToken: void 0, hostSeat: g.players.findIndex((p) => p.token === (g.hostToken || g.players[0]?.token)), paused: g.players.some((p) => p.vacant), players: g.players.map((p) => ({ name: p.name, vacant: !!p.vacant, team: team(g.players.indexOf(p), g) })), deck: g.deck?.length || 0, hands: void 0, hand: g.hands?.[seat] || [], seat, discard: g.discard?.slice(-1) || [] };
 }
 export {
   BOARD,

@@ -11,7 +11,7 @@ This ZIP is ready to run. Its prebuilt frontend and game engine are included; pr
 1. Extract this ZIP. Create a **private GitHub repository** and upload the contents of the `sequence-private` folder to the repository root. Include `public`, `source`, `server.mjs`, `game.mjs`, `package.json`, and `render.yaml`. Do not upload `.env` or `data`.
 2. In Render, choose **New → Blueprint**, connect that repository, and use its `render.yaml`.
 3. No password or login variables are required. Deploy the Blueprint.
-4. The included Blueprint selects a **paid Starter web service** and a **1 GB persistent disk**. Review Render's current charges before creating it. The disk preserves the table across deploys and restarts.
+4. The included Blueprint selects a **paid Starter web service** without a disk. Review Render’s current charges before creating it. Games are kept only in memory and reset on server restart or deployment.
 5. Open the HTTPS URL Render assigns. The game opens directly, with no login prompt.
 6. Each person opens that same URL on their own device/browser, enters their name, chooses Blue (藍隊) or Green (綠隊), and presses **加入遊戲**. After four players join, the host presses **發牌開始**.
 
@@ -24,14 +24,11 @@ This ZIP is ready to run. Its prebuilt frontend and game engine are included; pr
 | Build command | `node --check server.mjs` |
 | Start command | `npm start` |
 | Node version environment variable | `NODE_VERSION=22.16.0` |
-| Game data path | `DATA_DIR=/var/data/sequence` |
-| Persistent disk mount path | `/var/data` |
-| Persistent disk size | 1 GB |
 | Health check | `/healthz` |
 
 Use one service instance. Every player only needs the HTTPS URL. A Render Web Service has an internet-reachable URL; anyone with the URL can open the game and take an available seat. Render's **Private Service** type is for internal service networking and is not the right type for friends opening a website.
 
-A free service without a persistent disk can run this app using `DATA_DIR=./data`, but game and seat data can disappear on a restart or deployment. This ZIP's default Blueprint uses persistent storage instead.
+No disk or DATA_DIR is needed. Old table.json files and existing DATA_DIR settings are ignored. An existing Render disk is no longer used; you can remove it in your dashboard if desired.
 
 No room code, username, or password is needed. Player seat tokens still keep hands private and enforce turns. If upgrading an existing Render deployment, replace the files and redeploy; an old `GAME_PASSWORD` environment variable is ignored and can be removed.
 
@@ -40,7 +37,7 @@ No room code, username, or password is needed. Player seat tokens still keep han
 1. 解壓縮，將 `sequence-private` 資料夾內的檔案上傳至你自己的私人 GitHub 儲存庫根目錄。
 2. 在 Render 選擇 **New → Blueprint**，連接該儲存庫。
 3. 不需要設定密碼或帳號，直接部署。
-4. 此設定會建立付費 Starter 網頁服務與 1 GB 持久磁碟；建立前請確認費用。
+4. 此設定會建立付費 Starter 網頁服務，不需要磁碟；建立前請確認費用。
 5. 開啟 Render 提供的 HTTPS 網址即可直接進入遊戲，無需登入。
 6. 每位玩家用自己的裝置輸入名字並加入；四人到齊後，房主按「發牌開始」。
 
@@ -62,11 +59,17 @@ J♣、J♦ 顯示兩隻眼睛、金色底與「雙眼 J／任意放置」；J�
 
 ## 自由整理手牌
 
-用手指或滑鼠拖曳手牌到想要的位置。等候別人出牌時也能排序；點一下仍是選牌。鍵盤使用 Alt + 左右方向鍵移動目前聚焦的牌。排序只改變自己的手牌順序，不消耗回合，也不影響棋盤；順序會保存在遊戲資料中。
+用手指或滑鼠拖曳手牌到想要的位置。等候別人出牌時也能排序；點一下仍是選牌。鍵盤使用 Alt + 左右方向鍵移動目前聚焦的牌。排序只改變自己的手牌順序，不消耗回合，也不影響棋盤；順序會在本局中保留，結束後不另存棋局。
 
 ## 手機操作
 
 棋盤會隨手機寬度縮放。先點選手牌，再點發光格子。遊戲與說明使用繁體中文，牌面不翻譯。橫向模式可放大格子。
+
+## 開始新遊戲 / Start a new game
+
+首頁、加入畫面與「桌面選單」都有「開始新遊戲」。確認後清除棋盤、手牌與全部座位，所有人重新選隊加入。即使舊座位已滿，未入座的玩家仍可使用此按鈕。
+
+Game state is not saved to disk or browser storage. Refreshing an active tab preserves its seat via sessionStorage, but closed sessions are released by the disconnect timeout. Everyone leaving, server restart, deployment, or Start a new game clears the table. Closing one player's browser does not erase other players' active game. Responses use Cache-Control: no-store. Browser storage holds only the current tab's identity and the sound preference, never board or hand data.
 
 ## Disconnecting, leaving, and returning
 
@@ -86,7 +89,7 @@ The app is already built. To edit and rebuild: `npm install`, edit `source/`, th
 
 ## Files
 
-- `server.mjs`: Node HTTP server, direct access, seat limit, saved state.
+- `server.mjs`: Node HTTP server, direct access, seat limit, in-memory state (no saved boards or seats).
 - `game.mjs`: compiled game rules.
 - `public/`: production browser files.
 - `source/`: editable React/TypeScript source.

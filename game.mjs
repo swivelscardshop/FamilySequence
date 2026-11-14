@@ -60,6 +60,7 @@ function action(g, token, b) {
   if (b.action === "reorder") {
     const hand = g.hands?.[s];
     const order = b.order;
+    if (b.expectedHand && JSON.stringify(b.expectedHand) !== JSON.stringify(hand)) throw Error("\u624B\u724C\u5DF2\u66F4\u65B0\uFF0C\u8ACB\u91CD\u65B0\u62D6\u66F3\u3002");
     if (!hand || !Array.isArray(order) || order.length !== hand.length || new Set(order).size !== hand.length || order.some((i) => !Number.isInteger(i) || i < 0 || i >= hand.length)) throw Error("\u7121\u6548\u7684\u624B\u724C\u6392\u5217\u3002");
     g.hands[s] = order.map((i) => hand[i]);
     return;

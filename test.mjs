@@ -26,7 +26,7 @@ const arranged=await call('reorder',sortingSeat,{order:[5,0,1,2,3,4]});
 assert.deepEqual(arranged.hand,[before.hand[5],...before.hand.slice(0,5)]);assert.equal(arranged.turn,before.turn);assert.deepEqual(arranged.chips,before.chips);
 assert.deepEqual((await call('state',g.turn)).hand,otherBefore.hand);
 assert((await call('reorder',sortingSeat,{order:[0,0,1,2,3,4]})).error);
-assert.deepEqual((await call('state',sortingSeat)).hand,arranged.hand);
+assert.deepEqual((await call('state',sortingSeat)).hand,arranged.hand);assert((await call('reorder',sortingSeat,{order:[5,4,3,2,1,0],expectedHand:['stale']})).error);
 assert((await call('play',(g.turn+1)%4,{card:0,cell:1})).error);
 const seat=g.turn;const v=await call('state',seat);let played=false;for(let ci=0;ci<v.hand.length&&!played;ci++){const c=v.hand[ci];if(['JS','JH'].includes(c))continue;const cell=BOARD.findIndex(x=>x!=='X'&&(['JC','JD'].includes(c)||c===x));if(cell>=0){g=await call('play',seat,{card:ci,cell});assert(!g.error);assert.equal(g.chips[cell],team(seat,g));assert.equal(g.hand.length,6);played=true;}}assert(played);
 await call('disconnect',3);await new Promise(r=>setTimeout(r,1100));

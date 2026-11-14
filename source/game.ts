@@ -16,6 +16,7 @@ export function legal(g:any,seat:number,card:string,i:number){if(BOARD[i]==='X'|
 export function sequences(g:any,color:string){const old=g.lines[color];for(const [dr,dc] of [[0,1],[1,0],[1,1],[1,-1]])for(let r=0;r<10;r++)for(let c=0;c<10;c++){const cells=Array.from({length:5},(_,k)=>[r+dr*k,c+dc*k]);if(cells.some(([y,x])=>y<0||x<0||y>9||x>9))continue;const line=cells.map(([y,x])=>y*10+x);if(line.every(i=>BOARD[i]==='X'||g.chips[i]===color)&&old.every((l:number[])=>l.filter(i=>line.includes(i)).length<=1)){old.push(line);if(old.length===2)return;}}}
 export function action(g:any,token:string,b:any){let s=g.players.findIndex((p:any)=>p.token===token);if(s<0)throw Error('請先加入遊戲。');if(b.action==='reorder'){
 const hand=g.hands?.[s];const order=b.order;
+if(b.expectedHand&&JSON.stringify(b.expectedHand)!==JSON.stringify(hand))throw Error('手牌已更新，請重新拖曳。');
 if(!hand||!Array.isArray(order)||order.length!==hand.length||new Set(order).size!==hand.length||order.some((i:any)=>!Number.isInteger(i)||i<0||i>=hand.length))throw Error('無效的手牌排列。');
 g.hands[s]=order.map((i:number)=>hand[i]);return;
 }if(b.action==='start'||b.action==='rematch'){if(token!==(g.hostToken||g.players[0]?.token))throw Error('只有房主可以發牌。');if(g.players.length!==4||g.players.some((p:any)=>p.vacant))throw Error('需要四位玩家入座。');if(b.action==='rematch'&&g.phase!=='finished')throw Error('請先完成本局。');if(b.action==='start'&&g.phase!=='lobby')throw Error('遊戲已經開始。');deal(g);return;}

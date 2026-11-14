@@ -24,6 +24,8 @@ function deal(g) {
   g.lines = { blue: [], green: [] };
   g.turn = crypto.getRandomValues(new Uint32Array(1))[0] % 4;
   g.turnOrder = [0, 1].flatMap((k) => ["blue", "green"].map((t) => g.players.map((p, i) => team(i, g) === t ? i : -1).filter((i) => i >= 0)[k]));
+  g.roundId = crypto.randomUUID();
+  g.turnSerial = 0;
   g.phase = "playing";
   g.exchanged = false;
   g.log = ["\u5DF2\u767C\u724C\uFF0C\u904A\u6232\u958B\u59CB\uFF01"];
@@ -55,6 +57,13 @@ function sequences(g, color) {
 function action(g, token, b) {
   let s = g.players.findIndex((p) => p.token === token);
   if (s < 0) throw Error("\u8ACB\u5148\u52A0\u5165\u904A\u6232\u3002");
+  if (b.action === "reorder") {
+    const hand = g.hands?.[s];
+    const order = b.order;
+    if (!hand || !Array.isArray(order) || order.length !== hand.length || new Set(order).size !== hand.length || order.some((i) => !Number.isInteger(i) || i < 0 || i >= hand.length)) throw Error("\u7121\u6548\u7684\u624B\u724C\u6392\u5217\u3002");
+    g.hands[s] = order.map((i) => hand[i]);
+    return;
+  }
   if (b.action === "start" || b.action === "rematch") {
     if (token !== (g.hostToken || g.players[0]?.token)) throw Error("\u53EA\u6709\u623F\u4E3B\u53EF\u4EE5\u767C\u724C\u3002");
     if (g.players.length !== 4 || g.players.some((p) => p.vacant)) throw Error("\u9700\u8981\u56DB\u4F4D\u73A9\u5BB6\u5165\u5EA7\u3002");
@@ -83,6 +92,7 @@ function action(g, token, b) {
   const next = draw(g);
   if (next) g.hands[s].push(next);
   sequences(g, team(s, g));
+  g.turnSerial = (g.turnSerial || 0) + 1;
   g.log.unshift(g.players[s].name + " \u6253\u51FA\u4E86 " + card + ".");
   g.log = g.log.slice(0, 12);
   if (g.lines[team(s, g)].length >= 2) {

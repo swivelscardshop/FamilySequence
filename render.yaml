@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: starbridge-table
+    name: private-sequence-table
     runtime: node
     plan: starter
     buildCommand: node --check server.mjs

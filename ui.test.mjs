@@ -6,12 +6,12 @@ const require=createRequire(import.meta.url);
 const React=require('react');const {renderToString}=require('react-dom/server');
 test('jack eyes and labels, hidden in-game scores, recurring voice and cleanup',async()=>{
  const compiled=await build({entryPoints:['source/page.tsx'],bundle:true,platform:'node',format:'cjs',jsx:'automatic',external:['react','react/*'],write:false});
- const effects=[];let stateIndex=0;const g={roundId:'test',turnSerial:4,phase:'playing',seat:0,turn:0,paused:false,hostSeat:0,players:[{name:'玩家',team:'blue'}],hand:['BW','BW','GR','GR','1S','2H'],chips:Array(64).fill(null),lines:{blue:[],green:[]}};
- g.chips[1]='blue';
- const states=[true,g,'','blue',null,'',false,false,'player-token',true,false];const shim={...React,useState:initial=>[stateIndex<states.length?states[stateIndex++]:(typeof initial==='function'?initial():initial),()=>{}],useRef:value=>({current:value}),useEffect:(fn,deps)=>effects.push({fn,deps})};
+ const effects=[];let stateIndex=0;const g={roundId:'test',turnSerial:4,phase:'playing',seat:0,turn:0,paused:false,hostSeat:0,players:[{name:'玩家',team:'blue'}],hand:['JC','JD','JS','JH','AS','2H'],chips:Array(100).fill(null),lines:{blue:[],green:[]}};
+ g.chips[1]='blue';g.chips[21]='blue';g.chips[49]='blue';
+ const states=[true,g,'','blue',4,'',false,false,'player-token',true,false];const shim={...React,useState:initial=>[stateIndex<states.length?states[stateIndex++]:(typeof initial==='function'?initial():initial),()=>{}],useRef:value=>({current:value}),useEffect:(fn,deps)=>effects.push({fn,deps})};
  const mod={exports:{}};new Function('require','module','exports',compiled.outputFiles[0].text)(id=>id==='react'?shim:require(id),mod,mod.exports);
  const html=renderToString(React.createElement(mod.exports.default));
- assert.equal((html.match(/class="nature-power"/g)||[]).length,4);assert(html.includes('星橋'));assert(html.includes('微風'));assert(html.includes('任意落星'));assert(html.includes('移除散星'));assert(!html.includes('class="panel score"'));assert(html.includes('class="chip-card"'));assert(html.includes('class="chip-rank"'));assert(html.includes('class="chip-suit"'));assert(html.includes('放大棋盤'));assert(html.includes('active active-blue'));assert(!html.includes('class="player-photo"'));
+ assert.equal((html.match(/class="jack-eye"/g)||[]).length,6);assert(html.includes('雙眼 J'));assert(html.includes('單眼 J'));assert(!html.includes('class="panel score"'));assert(html.includes('class="chip-card"'));assert(html.includes('class="chip-rank"'));assert(html.includes('class="chip-suit"'));assert(html.includes('放大棋盤'));assert(html.includes('更換死牌'));assert(html.includes('active active-blue'));assert(!html.includes('class="player-photo"'));
  const originals={window:global.window,document:global.document,SpeechSynthesisUtterance:global.SpeechSynthesisUtterance,setTimeout:global.setTimeout,clearTimeout:global.clearTimeout,setInterval:global.setInterval,clearInterval:global.clearInterval};
  let spoken=[],cancelled=0;const intervals=new Map();let next=1;
  try{

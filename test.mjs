@@ -15,7 +15,7 @@ try{
 let base=await start();const tokens=Array.from({length:5},()=>crypto.randomUUID());
 const call=async(action,i=0,extra={})=>{const r=await fetch(base+'/api/game',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action,token:tokens[i],...extra})});return r.json()};
 assert.equal((await fetch(base+'/')).status,200);assert.match((await fetch(base+'/')).headers.get('cache-control'),/no-store/);assert.equal((await fetch(base+'/app.js')).status,200);
-assert.equal(BOARD.length,64);for(const c of new Set(BOARD.filter(c=>c!=='X')))assert.equal(BOARD.filter(x=>x===c).length,2);
+assert.equal(BOARD.length,100);for(const c of new Set(BOARD.filter(c=>c!=='X')))assert.equal(BOARD.filter(x=>x===c).length,2);
 for(let i=0;i<4;i++){let g=await call('join',i,{name:'玩家'+i,team:i<2?'green':'blue'});assert.equal(g.seat,i);assert.equal(g.players[i].team,i<2?'green':'blue');if(i===1)assert((await call('join',4,{name:'額外綠隊',team:'green'})).error);}
 assert.deepEqual([0,1,2,3].map(team),['blue','green','blue','green']);assert((await call('join',4,{name:'第五位'})).error);
 const voiceHeaders={'x-player-token':tokens[0]};let voiceState=await (await fetch(base+'/api/voice',{headers:voiceHeaders})).json();
@@ -25,7 +25,7 @@ const upload=await fetch(base+'/api/voice',{method:'POST',headers:{...voiceHeade
 assert.deepEqual(Buffer.from(await (await fetch(base+'/api/voice/'+clipId,{headers:{'x-player-token':tokens[1]}})).arrayBuffer()),wav);
 assert.equal((await fetch(base+'/api/voice/'+clipId,{headers:{'x-player-token':tokens[4]}})).status,403);
 const voiceList=await (await fetch(base+'/api/voice',{headers:{'x-player-token':tokens[1]}})).json();assert.equal(voiceList.messages[0].name,'玩家0');assert(!JSON.stringify(voiceList).includes(tokens[0]));
-assert((await call('start',1)).error);let g=await call('start');assert.equal(g.phase,'playing');assert.equal(g.hand.length,6);assert.equal(g.deck,48);assert.deepEqual(g.turnOrder.map(i=>team(i,g)),['blue','green','blue','green']);
+assert((await call('start',1)).error);let g=await call('start');assert.equal(g.phase,'playing');assert.equal(g.hand.length,6);assert.equal(g.deck,80);assert.deepEqual(g.turnOrder.map(i=>team(i,g)),['blue','green','blue','green']);
 for(let i=0;i<4;i++){let v=await call('state',i);assert(!('hands' in v));assert.equal(v.hand.length,6);assert(v.players.every(p=>!p.token));}
 const sortingSeat=(g.turn+1)%4;
 const before=await call('state',sortingSeat);const otherBefore=await call('state',g.turn);
@@ -35,7 +35,8 @@ assert.deepEqual((await call('state',g.turn)).hand,otherBefore.hand);
 assert((await call('reorder',sortingSeat,{order:[0,0,1,2,3,4]})).error);
 assert.deepEqual((await call('state',sortingSeat)).hand,arranged.hand);assert((await call('reorder',sortingSeat,{order:[5,4,3,2,1,0],expectedHand:['stale']})).error);
 assert((await call('play',(g.turn+1)%4,{card:0,cell:1})).error);
-const seat=g.turn;const v=await call('state',seat);let played=false;for(let ci=0;ci<v.hand.length&&!played;ci++){const c=v.hand[ci];if(c==='GR')continue;const cell=BOARD.findIndex(x=>x!=='X'&&(c==='BW'||c===x));if(cell>=0){g=await call('play',seat,{card:ci,cell});assert(!g.error);assert.equal(g.chips[cell],team(seat,g));assert.equal(g.hand.length,6);played=true;}}assert(played);
+const seat=g.turn;const v=await call('state',seat);let played=false;for(let ci=0;ci<v.hand.length&&!played;ci++){const c=v.hand[ci];if(['JS','JH'].includes(c))continue;const cell=BOARD.findIndex(x=>x!=='X'&&(['JC','JD'].includes(c)||c===x));if(cell>=0){g=await call('play',seat,{card:ci,cell});assert(!g.error);assert.equal(g.chips[cell],team(seat,g));assert.equal(g.hand.length,6);played=true;}}assert(played);
+const preserved=await call('state',3);await call('away',3);const waiting=await call('state',0);assert.equal(waiting.players[3].away,true);assert.equal(waiting.paused,true);const resumed=await call('state',3);assert.equal(resumed.seat,3);assert.deepEqual(resumed.hand,preserved.hand);assert.deepEqual(resumed.chips,preserved.chips);assert.equal(resumed.paused,false);
 await call('disconnect',3);await new Promise(r=>setTimeout(r,1100));
 let paused=await call('state');assert.equal(paused.paused,true);assert.equal(paused.players[3].vacant,true);assert(paused.chips.some(Boolean));
 let replacement=await call('join',4,{name:'補位玩家',team:'blue'});assert.equal(replacement.seat,3);assert.equal(replacement.paused,false);assert.equal(replacement.hand.length,6);

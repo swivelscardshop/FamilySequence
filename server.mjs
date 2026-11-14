@@ -46,7 +46,7 @@ if(url.pathname==='/api/game'){
     if(!['blue','green'].includes(b.team))throw Error('請選擇藍隊或綠隊。');
     if(next.players.filter((p,i)=>!p.vacant&&(p.team||(i%2?'green':'blue'))===b.team).length>=2)throw Error((b.team==='blue'?'藍隊':'綠隊')+'已滿，請選擇另一隊。');
     if(typeof b.name!=='string'||!b.name.trim())throw Error('請輸入你的名字。');
-    const player={name:b.name.trim().slice(0,24),token:b.token,team:b.team};
+    const player={name:b.name.trim().slice(0,24),token:b.token,team:b.team,portrait:['meiye','white-hat'].includes(b.portrait)?b.portrait:''};
     const vacant=next.players.findIndex(p=>p.vacant&&p.team===b.team);
     if(vacant>=0)next.players[vacant]=player;else if(next.phase==='lobby')next.players.push(player);else throw Error('請選擇有空位的隊伍。');
     next.hostToken ||= b.token;
@@ -61,8 +61,8 @@ if(url.pathname==='/api/game'){
  }catch(e){return send(res,400,{error:e.message||'無效的操作。'});}
 }
 if(req.method!=='GET'&&req.method!=='HEAD')return send(res,405,{error:'Method not allowed.'});
-const files={'/':'index.html','/app.js':'app.js','/app.css':'app.css'};const f=files[url.pathname];
+const files={'/':'index.html','/app.js':'app.js','/app.css':'app.css','/balloon-photo.jpg':'balloon-photo.jpg'};const f=files[url.pathname];
 if(!f)return send(res,404,{error:'Not found.'});
-try{const bytes=readFileSync(path.join(root,'public',f));res.writeHead(200,{'Content-Type':f.endsWith('.html')?'text/html; charset=utf-8':f.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8','Cache-Control':'no-store, max-age=0'});res.end(req.method==='HEAD'?undefined:bytes);}catch{return send(res,500,{error:'Missing frontend build.'});}
+try{const bytes=readFileSync(path.join(root,'public',f));res.writeHead(200,{'Content-Type':f.endsWith('.jpg')?'image/jpeg':f.endsWith('.html')?'text/html; charset=utf-8':f.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8','Cache-Control':'no-store, max-age=0'});res.end(req.method==='HEAD'?undefined:bytes);}catch{return send(res,500,{error:'Missing frontend build.'});}
 });
 server.listen(Number(process.env.PORT||3000),process.env.HOST||'0.0.0.0',()=>console.log('Private Sequence Table listening on port '+server.address().port));

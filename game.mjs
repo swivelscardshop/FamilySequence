@@ -17,6 +17,8 @@ function shuffle(a) {
   return a;
 }
 function deal(g) {
+  g.matchScore ||= { blue: 0, green: 0 };
+  g.results ||= [];
   g.deck = shuffle(Array.from({ length: 2 }, () => ["S", "H", "D", "C"].flatMap((s) => ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"].map((r) => r + s))).flat());
   g.discard = [];
   g.hands = g.players.map(() => g.deck.splice(0, 6));
@@ -99,6 +101,9 @@ function action(g, token, b) {
   if (g.lines[team(s, g)].length >= 2) {
     g.winner = team(s, g);
     g.phase = "finished";
+    g.matchScore ||= { blue: 0, green: 0 };
+    g.matchScore[g.winner]++;
+    g.results = [{ roundId: g.roundId, winner: g.winner }, ...g.results || []].slice(0, 20);
   } else if (g.chips.every((v, i) => v || BOARD[i] === "X")) {
     g.phase = "finished";
     g.winner = "draw";
@@ -107,7 +112,7 @@ function action(g, token, b) {
 }
 function view(g, token) {
   const seat = g.players.findIndex((p) => p.token === token);
-  return { ...g, hostToken: void 0, hostSeat: g.players.findIndex((p) => p.token === (g.hostToken || g.players[0]?.token)), paused: g.players.some((p) => p.vacant), players: g.players.map((p) => ({ name: p.name, vacant: !!p.vacant, team: team(g.players.indexOf(p), g) })), deck: g.deck?.length || 0, hands: void 0, hand: g.hands?.[seat] || [], seat, discard: g.discard?.slice(-1) || [] };
+  return { ...g, hostToken: void 0, hostSeat: g.players.findIndex((p) => p.token === (g.hostToken || g.players[0]?.token)), paused: g.players.some((p) => p.vacant), players: g.players.map((p) => ({ name: p.name, portrait: p.portrait || "", vacant: !!p.vacant, team: team(g.players.indexOf(p), g) })), deck: g.deck?.length || 0, hands: void 0, hand: g.hands?.[seat] || [], seat, discard: g.discard?.slice(-1) || [] };
 }
 export {
   BOARD,

@@ -1,6 +1,6 @@
 {
-  "name": "private-sequence-table",
-  "version": "1.4.0",
+  "name": "starbridge-game",
+  "version": "2.1.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node --env-file-if-exists=.env server.mjs",
-    "test": "node --test test.mjs ui.test.mjs advisor.test.mjs wins.test.mjs",
+    "test": "node --test test.mjs ui.test.mjs advisor.test.mjs wins.test.mjs voice.test.mjs",
     "build": "node build.mjs"
   },
   "devDependencies": {

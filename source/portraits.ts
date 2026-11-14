@@ -1,2 +1,2 @@
-export function portraitFor(player:any){if(['meiye','white-hat'].includes(player.portrait))return player.portrait;return /^meiye$/i.test((player.name||'').trim())?'meiye':'';}
+export function portraitFor(player:any){const name=(player.name||'').normalize('NFKC').replace(/\s+/g,'').toLowerCase();if(name==='meiye')return 'meiye';if(['姨妈','姨媽','嫂妈','嫂媽','嫮妈','嫮媽'].includes(name))return 'white-hat';if(['meiye','white-hat'].includes(player.portrait))return player.portrait;return '';}
 export function winningPlayers(players:any[],winner:string){return players.filter((p,i)=>!p.vacant&&(p.team||(i%2?'green':'blue'))===winner);}

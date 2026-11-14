@@ -1,129 +1,63 @@
-# 私人連珠棋 / Private Sequence Table
+# 星橋棋 / Starbridge — working title
 
-Version: **1.4.0** — personalized winning-team face balloons, plus all previous features.
+Version **2.1.0**. Independently implemented four-player nature-tile strategy game.
+**The name is provisional, not a cleared trademark. This package is not a legal opinion or a guarantee of non-infringement.**
 
-手機友善、繁體中文介面及遊戲說明，撲克牌保留 A、2–10、J、Q、K 及原有花色。
-一個網址、一張共用遊戲桌；不用房間代碼。最多四位玩家，藍隊與綠隊各兩人。
-加入時可選擇藍隊或綠隊，各隊最多兩位；系統會自動安排兩隊交替出牌。第一位玩家是房主。
+## What changed
 
-## Deploy to your Render account (English)
+- New 8×8 board, independently generated arrangement, no free corners.
+- Four nature families: sun ☀, moon ☾, leaf ❧, water ≈; each numbered 1–8.
+- No standard playing-card faces or J abilities. Two distinct power tiles: Starbridge ⌒ and Breeze 〰.
+- Four stars build a path. Three disjoint paths win. Paths cannot share a star.
+- New instructions, theme and presentation, no third-party game name or logos in the UI.
+- Personalized edition: winning-team balloons use the supplied photos; Meiye maps to black hat and the screenshot’s Chinese name maps to white hat. Other players use initials. The regular roster has initials, and only the active name turns red.
 
-This ZIP is ready to run. Its prebuilt frontend and game engine are included; production needs Node.js 22+ and no npm installation.
+No claim is made that these changes settle every copyright, trademark, trade-dress, patent, photograph, font or platform question. Obtain IP review and name clearance before public/commercial distribution. Apple approval is a separate review. Do not describe this as an official adaptation of another game.
 
-1. Extract this ZIP. Create a **private GitHub repository** and upload the contents of the `sequence-private` folder to the repository root. Include `public`, `source`, `server.mjs`, `game.mjs`, `package.json`, and `render.yaml`. Do not upload `.env` or `data`.
-2. In Render, choose **New → Blueprint**, connect that repository, and use its `render.yaml`.
-3. No password or login variables are required. Deploy the Blueprint.
-4. The included Blueprint selects a **paid Starter web service** without a disk. Review Render’s current charges before creating it. Games are kept only in memory and reset on server restart or deployment.
-5. Open the HTTPS URL Render assigns. The game opens directly, with no login prompt.
-6. Each person opens that same URL on their own device/browser, enters their name, chooses Blue (藍隊) or Green (綠隊), and presses **加入遊戲**. After four players join, the host presses **發牌開始**.
+## 規則
 
-### If creating a Web Service manually
+四位玩家分成藍綠兩隊，每隊兩人。每人六張手牌。出一張自然牌，在數字與圖案相同的空格落星，然後自動補牌。星圖共有 64 格，每種自然牌出現兩次。
 
-| Render field | Value |
-|---|---|
-| Service type | Web Service (not Static Site or Private Service) |
-| Runtime | Node |
-| Build command | `node --check server.mjs` |
-| Start command | `npm start` |
-| Node version environment variable | `NODE_VERSION=22.16.0` |
-| Health check | `/healthz` |
+橫、直、斜向連成四枚同色星子，即築成星橋。星橋受到保護，不能被微風移除。先完成三座不共用星子的星橋獲勝，沒有免費角落。
 
-Use one service instance. Every player only needs the HTTPS URL. A Render Web Service has an internet-reachable URL; anyone with the URL can open the game and take an available seat. Render's **Private Service** type is for internal service networking and is not the right type for friends opening a website.
+星橋牌（⌒）可在任意空格落星。微風牌（〰）可移除對方尚未築橋的散星。兩個對應格子都被佔用的自然牌，每回合可換一張，然後繼續出牌。
 
-No disk or DATA_DIR is needed. Old table.json files and existing DATA_DIR settings are ignored. An existing Render disk is no longer used; you can remove it in your dashboard if desired.
+## Features retained
 
-No room code, username, or password is needed. Player seat tokens still keep hands private and enforce turns. If upgrading an existing Render deployment, replace the files and redeploy; an old `GAME_PASSWORD` environment variable is ignored and can be removed.
+Chinese UI and spoken 20-second turn reminders; large numbers and optional board zoom; touch/mouse hand reordering; game-aware move advice and Chinese voice/text assistant; team selection; shared wins scorecard; champagne/confetti/initial balloons and dinner joke. The assistant uses local heuristic analysis, not a general language model, and doesn't see other hands. Browser microphone/speech support varies; typed chat is available. Browser recognition may send audio to the browser provider's service.
 
-## Render 部署步驟（繁體中文）
+No passwords or room codes. One shared table, two players per team. Anyone with the URL can join or use Start New Game after confirmation. Use one server instance. Private hands use random per-tab tokens; no player account system.
 
-1. 解壓縮，將 `sequence-private` 資料夾內的檔案上傳至你自己的私人 GitHub 儲存庫根目錄。
-2. 在 Render 選擇 **New → Blueprint**，連接該儲存庫。
-3. 不需要設定密碼或帳號，直接部署。
-4. 此設定會建立付費 Starter 網頁服務，不需要磁碟；建立前請確認費用。
-5. 開啟 Render 提供的 HTTPS 網址即可直接進入遊戲，無需登入。
-6. 每位玩家用自己的裝置輸入名字並加入；四人到齊後，房主按「發牌開始」。
+## Render setup
 
-## 新版外觀與全螢幕
+Already built: Node.js 22+ runs the package with no dependency installation.
 
-開啟網址會先看到遊戲首頁，點「開始遊戲」後輸入名字並選隊。支援的瀏覽器會嘗試進入真正全螢幕；也可使用右上角 ⛶ 按鈕。iPhone Safari 若未支援全螢幕 API，仍使用滿版響應式介面；可透過「分享 → 加入主畫面」以網頁 App 模式開啟。介面支援直向與橫向，卡牌內容保持不變。
+1. Extract the ZIP and upload the contents of `starbridge-game` to your private GitHub repository root.
+2. For a **new deployment**, choose Render **New → Blueprint**, select the repository and review `render.yaml`. It uses a paid Starter service; check current charges before creating it. No disk or API keys required.
+3. For an **existing deployment**, replace the repository contents, commit, then deploy the latest commit on the existing Render service. Do not create another Blueprint unless you want a separate service. Your old URL may still contain the previous project name; change that separately in your hosting account if desired.
+4. Build command: `node --check server.mjs`. Start command: `npm start`. Health check: `/healthz`. Node environment: `NODE_VERSION=22.16.0`.
+5. Share the assigned HTTPS URL with three friends. Each enters a name and chooses a team. First player hosts and presses 發牌開始 once all four have joined.
 
-## 中文語音提醒
+## Sessions and scores
 
-自己的回合開始時會播放「輪到你了，請出牌」，如果尚未出牌，每 20 秒再提醒一次。出牌、離開、暫停遊戲或靜音後會停止；整理手牌或更換死牌仍是同一回合。右上角 🔊／🔇 可開關聲音。「測試語音」／「重播回合提醒」可直接測試；語音未啟動時會顯示「點此恢復語音」。回到遊戲時會喚醒朗讀引擎。手機必須開啟媒體音量並有中文語音；鎖定或放到背景時，瀏覽器可能無法播放，請保持遊戲在前景。無法在此測試實際 iPhone 的聲音播放。
+No boards, hands or scores are saved to disk. Old table.json / DATA_DIR values are ignored. Refreshing a tab preserves its seat; closing normally releases it after ~10 seconds, lost heartbeat after ~60 seconds. Empty seats pause the game and can be refilled. Everyone leaving resets it. Start New Game, deployment and server restart reset the table and scorecard. Rematch preserves win totals. Browser responses use no-store.
 
-## J 牌辨識
+## Local Windows use
 
-J♣、J♦ 顯示兩隻眼睛、金色底與「雙眼 J／任意放置」；J♥、J♠ 顯示一隻眼睛、粉紅底與「單眼 J／移除對方」。遊戲開始後隱藏 0/2 比分列，連線與勝負仍會照常計算。
+Install Node.js 22+, then double-click start-windows.bat. Open http://localhost:3000. No password required. Render's HTTPS URL is used for online play.
 
-## 棋盤優先手機版面
+## Editing
 
-棋盤使用接近整個螢幕寬度，牌面字體加大。底部玩家縮成一排，比分縮成小橫條。「離開遊戲」與「清空遊戲桌」移至「桌面選單」。小螢幕可上下捲動，不壓縮棋盤來塞入整頁。
+Run `npm install`, edit `source/`, `npm run build`, and `npm test`. Production files are included. `VERSION.txt` records the release. If a dependency is changed, review its license and commit the new lockfile.
 
-## 棋盤與棋子
+## v2.0.1 personal celebration update
 
-比分橫條已移除。棋子上直接顯示該格牌的數字／字母與花色，已完成連線的棋子另有小星號，不遮住牌值。拖曳手牌會標出落點，以拖曳前的格位計算位置，避免牌卡跟隨手指時誤判為原位。
+In-game names below the board: active player’s name turns bright red; no glowing frame and no face photos in the roster. Winning-team balloons: Meiye uses the black-hat portrait; 姨妈/姨媽 (and the screenshot spelling variants) uses white-hat portrait automatically. The uploaded original photo is included as a game asset for these balloon portraits. No generated preview image is included. Deploying this personalized package makes that photo accessible through the game’s URL. This version is a personal-photo edition, not the photo-free public-release package.
 
-## 自由整理手牌
+## v2.1.0 玩家語音訊息
 
-用手指或滑鼠拖曳手牌到想要的位置。等候別人出牌時也能排序；點一下仍是選牌。鍵盤使用 Alt + 左右方向鍵移動目前聚焦的牌。排序只改變自己的手牌順序，不消耗回合，也不影響棋盤；順序會在本局中保留，結束後不另存棋局。
+玩家入座後，底部顯示「玩家語音訊息」。按住錄音，放開傳送，展開列表後點訊息播放；再點正在播放的訊息可停止。所有已入座玩家都能收聽，不會自動播放，也不是隊內私訊或即時通話。每段最多 30 秒，保留最近 20 段。音訊暫存在伺服器記憶體，不寫入磁碟；開始新遊戲、全員離開或重新啟動服務時清除。重新開一局（rematch）保留同桌訊息。
 
-## 語音棋局助手與落點建議
+首次需要允許麥克風。如果在授權時已放開按鈕，請再按住一次，避免授權後意外錄音。切到背景、離開畫面或取消操作會放棄未送出的錄音並關閉麥克風。錄音期間不播放自動回合語音。支援鍵盤：按住空白鍵或 Enter 錄音，放開傳送。
 
-點右上角「🎙 助手」，再按「按一下說話」，允許麥克風後用中文提問；也可以輸入文字。可問「現在輪到誰？」「我的手牌是什麼？」「單眼 J 怎麼用？」「建議我下在哪裡？」系統會朗讀回答（語音開啟時）。不會常駐監聽，關閉助手即停止辨識。部分瀏覽器會將聲音送至其語音辨識服務，需要網路；本遊戲不自行儲存錄音或聊天。
-
-這是專用棋局助手，不是通用生成式聊天模型，不需要 AI API 金鑰。落點分析使用本機啟發式策略，查看目前棋盤與自己的手牌，優先考量獲勝、完成連線、阻擋對手及建立連線機會。建議有金色星號標示，會選取對應手牌，但仍由你點格子確認出牌。它不保證最佳走法、不查看其他人的手牌，棋盤改變時請重新詢問。
-
-## 長輩大字模式
-
-數字加大加粗，花色縮小，棋子上的數字與花色分行顯示。按「放大棋盤」可放大至至少 620 像素寬，左右滑動查看；按「縮小棋盤」回到完整棋盤。
-
-## 對戰戰績與慶祝
-
-在「桌面選單 → 🏆 對戰戰績」查看藍綠兩隊的累計勝場及最近五局結果。每局勝利自動加一分；「再玩一局」保留勝場。開始新遊戲、全員離開或伺服器重新啟動後歸零，不儲存舊棋局。
-
-獲勝時顯示香檳開瓶、飛出瓶塞和彩紙動畫，並祝賀獲勝隊伍：「距離贏得一頓大餐，又近一步！菜單先看起來，帳單先別搶！」語音開啟時會朗讀祝賀，支援的瀏覽器會播放輕微開瓶聲。減少動態效果設定會停用動畫。可關閉慶祝畫面查看最後棋盤，房主也可直接開始下一局。
-
-## 人像勝利氣球
-
-獲勝時，勝利隊伍兩位玩家各有一顆人像氣球。Meiye（不分大小寫）自動使用黑帽照片；白帽玩家在加入遊戲時，於「慶祝氣球照片」選擇「白帽玩家」。也可手動選擇 Meiye 黑帽照片。未選照片的其他玩家以名字首字顯示。只有獲勝隊伍顯示氣球，換隊後依目前隊伍判斷。
-
-照片已包含在套件的 public/balloon-photo.jpg，僅透過遊戲介面的橢圓遮罩顯示指定人像，沒有使用臉部辨識。這份個人化套件包含你提供的照片，部署後照片會隨公開網址提供。
-
-## 手機操作
-
-棋盤會隨手機寬度縮放。先點選手牌，再點發光格子。遊戲與說明使用繁體中文，牌面不翻譯。橫向模式可放大格子。
-
-## 開始新遊戲 / Start a new game
-
-首頁、加入畫面與「桌面選單」都有「開始新遊戲」。確認後清除棋盤、手牌與全部座位，所有人重新選隊加入。即使舊座位已滿，未入座的玩家仍可使用此按鈕。
-
-Game state is not saved to disk or browser storage. Refreshing an active tab preserves its seat via sessionStorage, but closed sessions are released by the disconnect timeout. Everyone leaving, server restart, deployment, or Start a new game clears the table. Closing one player's browser does not erase other players' active game. Responses use Cache-Control: no-store. Browser storage holds only the current tab's identity and the sound preference, never board or hand data.
-
-## Disconnecting, leaving, and returning
-
-Use **離開遊戲** to leave immediately. Closing the browser normally releases the seat after a 10-second grace period; refreshing within this window keeps your seat. If the browser cannot notify the server (for example, a force-closed phone app), missing heartbeats release the seat after approximately 60 seconds. A suspended phone tab may also time out.
-
-During a game, an empty seat pauses moves. A replacement player selects the same team and takes that seat and hand; the board is preserved. Once all four seats are filled, play resumes. The host transfers automatically when the current host leaves. If everyone leaves, the table resets. Host reset remains available with confirmation.
-
-The game implements matching placements, two-eyed wild jacks (clubs/diamonds), one-eyed removal jacks (hearts/spades), dead-card exchange once per turn, protected sequences, free corners, and two sequences to win with at most one shared space. Replacements and sequence detection are automatic; physical-table forgotten-draw penalties and verbal coaching penalties are not automated.
-
-## Local use on Windows
-
-Install Node.js 22 or later, then double-click `start-windows.bat`. Open `http://localhost:3000`. Use HTTPS when hosting online; Render supplies it for its assigned URL.
-
-## Editing the source
-
-The app is already built. To edit and rebuild: `npm install`, edit `source/`, then `npm run build`. Run `npm test` to verify the backend. No ChatGPT account, OpenAI API key, Sites hosting, Cloudflare account, or database service is required.
-
-## Files
-
-- `server.mjs`: Node HTTP server, direct access, seat limit, in-memory state (no saved boards or seats).
-- `game.mjs`: compiled game rules.
-- `public/`: production browser files.
-- `source/`: editable React/TypeScript source.
-- `render.yaml`: Render deployment configuration.
-- `test.mjs`: integration checks.
-
-Independent fan implementation. Not affiliated with or endorsed by JAX or Goliath. This package does not include official logos or card illustrations.
-
-Render references: https://render.com/docs/web-services · https://render.com/docs/disks · https://render.com/docs/blueprint-spec
+需 HTTPS 或 localhost 及支援 getUserMedia/MediaRecorder 的瀏覽器。錄音會優先轉為單聲道 16 kHz WAV 以方便跨裝置播放，失敗時使用瀏覽器原生 MP4/WebM/OGG。此環境未測試實際手機的麥克風和揚聲器，部署後請用兩台手機測試收發。沒有將玩家錄音送給 AI 或語音轉文字服務；只傳給你自己的遊戲伺服器。

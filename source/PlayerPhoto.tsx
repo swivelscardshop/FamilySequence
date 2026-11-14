@@ -1,0 +1,2 @@
+import {portraitFor} from './portraits';
+export default function PlayerPhoto({player}:{player:any}){const portrait=portraitFor(player);return portrait?<svg className="player-photo" viewBox={portrait==='meiye'?'435 520 200 255':'135 525 190 235'} role="img" aria-label={player.name+'的照片'} preserveAspectRatio="xMidYMid slice"><image href="/balloon-photo.jpg" width="709" height="1536"/></svg>:<>{player.name?.[0]?.toUpperCase()||'+'}</>;}

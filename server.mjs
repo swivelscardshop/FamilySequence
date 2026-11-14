@@ -3,6 +3,8 @@ import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {action,view} from './game.mjs';
+import {VoiceStore} from './voice-store.mjs';
+const voice=new VoiceStore();
 const root=path.dirname(fileURLToPath(import.meta.url));
 // Each server process starts with a clean table; old disk snapshots are never loaded.
 let g={players:[],phase:'lobby',log:[]};
@@ -16,7 +18,7 @@ function release(token){
  if(g.phase==='lobby')g.players.splice(i,1);
  else g.players[i]={name:'',team:g.players[i].team,vacant:true};
  if(g.hostToken===token)g.hostToken=g.players.find(p=>p.token)?.token;
- if(!g.players.some(p=>p.token))g={players:[],phase:'lobby',log:[]};
+ if(!g.players.some(p=>p.token)){g={players:[],phase:'lobby',log:[]};voice.reset();}
  
 }
 function sweep(){const now=Date.now();for(const [token,p] of seen)if(now-p.at>heartbeatMs||(p.closeAt&&now>p.closeAt))release(token);}
@@ -27,6 +29,22 @@ res.setHeader('Cache-Control','no-store, max-age=0');res.setHeader('Pragma','no-
 res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','same-origin');res.setHeader('X-Frame-Options','DENY');
 if(req.url==='/healthz'){res.writeHead(200,{'Content-Type':'text/plain'});return res.end('ok');}
 let url;try{url=new URL(req.url,'http://localhost');}catch{return send(res,400,{error:'Invalid URL.'});}
+if(url.pathname==='/api/voice'||url.pathname.startsWith('/api/voice/')){
+ sweep();const token=req.headers['x-player-token'];let player=g.players.find(p=>p.token===token);
+ if(!player||!token)return send(res,403,{error:'請先加入遊戲。'});
+ if(req.headers.origin&&req.headers.origin!==`${req.headers['x-forwarded-proto']||'http'}://${req.headers.host}`)return send(res,403,{error:'請求來源不符。'});
+ if(req.method==='GET'){
+ if(url.pathname==='/api/voice')return send(res,200,voice.list());
+ const clip=voice.clips.get(url.pathname.slice('/api/voice/'.length));if(!clip)return send(res,404,{error:'語音已清除。'});
+ res.writeHead(200,{'Content-Type':clip.mime,'Content-Length':clip.bytes.length,'Cache-Control':'no-store'});return res.end(clip.bytes);
+ }
+ if(req.method!=='POST'||url.pathname!=='/api/voice')return send(res,405,{error:'Method not allowed.'});
+ const roomId=voice.roomId;if(req.headers['x-room-id']!==roomId)return send(res,409,{error:'遊戲桌已重設，請重新錄音。'});
+ try{const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>1100000)return send(res,413,{error:'每段語音最長 30 秒，檔案不可超過 1.1 MB。'});chunks.push(chunk);}
+ player=g.players.find(p=>p.token===token);if(!player||voice.roomId!==roomId)return send(res,409,{error:'你已離開或遊戲桌已重設。'});
+ const message=voice.add({token,name:player.name,team:player.team,id:req.headers['x-message-id'],mime:req.headers['content-type'],duration:Number(req.headers['x-duration']),bytes:Buffer.concat(chunks)});
+ return send(res,200,{message});}catch(e){return send(res,400,{error:e.message});}
+}
 if(url.pathname==='/api/game'){
  if(req.method!=='POST')return send(res,405,{error:'POST required.'});
  if(req.headers.origin&&req.headers.origin!==`${req.headers['x-forwarded-proto']||'http'}://${req.headers.host}`)return send(res,403,{error:'請求來源不符，請從遊戲網址操作。'});
@@ -37,9 +55,9 @@ if(url.pathname==='/api/game'){
  sweep();
  if(b.action==='disconnect'){const p=seen.get(b.token);if(p)p.closeAt=Date.now()+closeGraceMs;return send(res,200,{ok:true});}
  if(b.action==='leave'){release(b.token);return send(res,200,{reset:true});}
- if(b.action==='newgame'){g={players:[],phase:'lobby',log:[]};seen.clear();return send(res,200,{reset:true});}
+ if(b.action==='newgame'){g={players:[],phase:'lobby',log:[]};seen.clear();voice.reset();return send(res,200,{reset:true});}
  const next=structuredClone(g);
- if(b.action==='reset'){if(next.hostToken!==b.token)throw Error('只有房主可以重設遊戲桌。');g={players:[],phase:'lobby',log:[]};seen.clear();return send(res,200,{reset:true});}
+ if(b.action==='reset'){if(next.hostToken!==b.token)throw Error('只有房主可以重設遊戲桌。');g={players:[],phase:'lobby',log:[]};seen.clear();voice.reset();return send(res,200,{reset:true});}
  if(b.action==='join'){
    if(!next.players.some(p=>p.token===b.token)){
     if(next.players.filter(p=>!p.vacant).length>=4)throw Error('四個座位已滿。');
@@ -65,4 +83,4 @@ const files={'/':'index.html','/app.js':'app.js','/app.css':'app.css','/balloon-
 if(!f)return send(res,404,{error:'Not found.'});
 try{const bytes=readFileSync(path.join(root,'public',f));res.writeHead(200,{'Content-Type':f.endsWith('.jpg')?'image/jpeg':f.endsWith('.html')?'text/html; charset=utf-8':f.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8','Cache-Control':'no-store, max-age=0'});res.end(req.method==='HEAD'?undefined:bytes);}catch{return send(res,500,{error:'Missing frontend build.'});}
 });
-server.listen(Number(process.env.PORT||3000),process.env.HOST||'0.0.0.0',()=>console.log('Private Sequence Table listening on port '+server.address().port));
+server.listen(Number(process.env.PORT||3000),process.env.HOST||'0.0.0.0',()=>console.log('Starbridge Table listening on port '+server.address().port));
